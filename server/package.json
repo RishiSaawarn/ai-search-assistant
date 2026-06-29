@@ -13,6 +13,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@google/genai": "^2.10.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
   "devDependencies": {
@@ -22,6 +24,8 @@
     "typescript": "^6.0.3"
   },
   "allowScripts": {
-    "esbuild@0.28.1": true
+    "esbuild@0.28.1": true,
+    "@google/genai@2.10.0": true,
+    "protobufjs@7.6.4": true
   }
 }

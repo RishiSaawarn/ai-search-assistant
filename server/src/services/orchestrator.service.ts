@@ -1,38 +1,44 @@
 import { ConversationService } from "./conversation.service.js";
-
 import type { LLMService } from "./llm/llm.interface.js";
+import type { SearchDecisionService } from "../services/search/search-decision.interface.js";
 
 export class OrchestratorService {
     constructor(
-        private conversationService: ConversationService,
-        private llmService: LLMService
-    ) {}
+    private conversationService: ConversationService,
+    private llmService: LLMService,
+    private searchDecisionService: SearchDecisionService
+) {}
 
     async handleMessage(
-        chatId: string,
-        message: string
-    ): Promise<string> {
-        // Store the user's message
-        this.conversationService.addMessage(
-            chatId,
-            "user",
-            message
-        );
+    chatId: string,
+    message: string
+): Promise<string> {
+    // Store user message
+    this.conversationService.addMessage(
+        chatId,
+        "user",
+        message
+    );
 
-        // Get the updated conversation
-        const chat = this.conversationService.getChat(chatId);
+    // Get updated conversation
+    const chat = this.conversationService.getChat(chatId);
 
-        // Generate AI response
-        const reply = await this.llmService.generateResponse(chat);
+    // Decide whether web search is needed
+    const shouldSearch =
+        await this.searchDecisionService.shouldSearch(chat);
 
-        // Store the assistant's response
-        this.conversationService.addMessage(
-            chatId,
-            "assistant",
-            reply
-        );
+    console.log("Search required:", shouldSearch);
 
-        // Return the response
-        return reply;
-    }
+    // For now, we ignore the decision and always use the LLM
+    const reply = await this.llmService.generateResponse(chat);
+
+    // Store assistant response
+    this.conversationService.addMessage(
+        chatId,
+        "assistant",
+        reply
+    );
+
+    return reply;
+}
 }
