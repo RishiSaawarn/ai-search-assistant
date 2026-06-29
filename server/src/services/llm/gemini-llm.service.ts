@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-
+import type { Prompt } from "../../models/prompt.model.js";
 import type { Chat } from "../../models/chat.model.js";
 import type { LLMService } from "./llm.interface.js";
 

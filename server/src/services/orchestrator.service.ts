@@ -1,12 +1,14 @@
 import { ConversationService } from "./conversation.service.js";
 import type { LLMService } from "./llm/llm.interface.js";
 import type { SearchDecisionService } from "../services/search/search-decision.interface.js";
+import type { PromptBuilder } from "../services/prompt/prompt-builder.interface.js";
 
 export class OrchestratorService {
     constructor(
     private conversationService: ConversationService,
     private llmService: LLMService,
-    private searchDecisionService: SearchDecisionService
+    private searchDecisionService: SearchDecisionService,
+    private promptBuilder: PromptBuilder
 ) {}
 
     async handleMessage(
