@@ -4,6 +4,11 @@ import { DefaultPromptBuilderService } from "./services/prompt/default-prompt-bu
 import { OrchestratorService } from "./services/orchestrator.service.js";
 import { GeminiLLMService } from "./services/llm/gemini-llm.service.js";
 import { TavilySearchService } from "./services/search/tavily-search.service.js";
+import { ReadabilityCrawlerService }
+from "./services/crawler/readability-crawler.service.js";
+
+export const crawlerService =
+new ReadabilityCrawlerService();
 
 export const searchService =
     new TavilySearchService();
@@ -29,5 +34,7 @@ export const orchestratorService =
         conversationService,
         llmService,
         searchDecisionService,
-        promptBuilder
+        promptBuilder,
+        searchService,
+        crawlerService
     );
