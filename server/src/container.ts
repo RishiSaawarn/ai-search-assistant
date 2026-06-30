@@ -3,7 +3,11 @@ import { ConversationFormatterService } from "./services/prompt/conversation-for
 import { DefaultPromptBuilderService } from "./services/prompt/default-prompt-builder.service.js";
 import { OrchestratorService } from "./services/orchestrator.service.js";
 import { GeminiLLMService } from "./services/llm/gemini-llm.service.js";
+import { TavilySearchService } from "./services/search/tavily-search.service.js";
 
+export const searchService =
+    new TavilySearchService();
+    
 export const conversationFormatter =
     new ConversationFormatterService();
 
