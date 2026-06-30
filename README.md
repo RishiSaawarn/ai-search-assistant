@@ -1,9 +1,11 @@
 # AI Search Assistant (Cyber-Terminal Edition) 📟
 
-A powerful, AI-driven search assistant inspired by tools like Perplexity, featuring a highly stylized **80s Phosphor Cyber-Terminal** UI. It acts as an intelligent conversational agent that can autonomously decide when to search the web, reformulate queries based on chat history, and provide cited answers with sources.
+A powerful, AI-driven search assistant inspired by tools like Perplexity, featuring a highly stylized **80s Phosphor Cyber-Terminal** UI. Under the hood, it boasts a **strong, decoupled Node.js backend** built with dependency injection (Awilix), driving advanced **RAG (Retrieval-Augmented Generation)** capabilities to autonomously decide when to search the web, reformulate queries based on chat history, and provide cited, grounded answers with sources.
 
 ## ✨ Features
 
+*   **Robust Backend Architecture**: A scalable, decoupled Node.js/Express backend utilizing Dependency Injection for its orchestration pipeline, ensuring testability and modularity.
+*   **Advanced RAG Capabilities**: Employs Retrieval-Augmented Generation to fetch real-time web context before querying the LLM, ensuring highly accurate, up-to-date responses.
 *   **Intelligent Routing**: Uses an LLM to decide whether a user's prompt requires a web search or if it can be answered using existing context/general knowledge.
 *   **Query Reformulation**: Automatically rewrites follow-up questions into standalone, context-rich search queries.
 *   **Live Web Searching**: Integrates with the **Tavily Search API** for rapid, accurate search results and snippets.
