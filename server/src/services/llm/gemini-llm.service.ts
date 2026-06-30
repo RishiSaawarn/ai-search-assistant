@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
+
 import type { Prompt } from "../../models/prompt.model.js";
-import type { Chat } from "../../models/chat.model.js";
 import type { LLMService } from "./llm.interface.js";
 
 export class GeminiLLMService implements LLMService {
@@ -14,18 +14,27 @@ export class GeminiLLMService implements LLMService {
         }
 
         this.ai = new GoogleGenAI({
-            apiKey
+            apiKey,
         });
     }
 
-    async generateResponse(chat: Chat): Promise<string> {
-        const conversation = chat.messages
-            .map(message => `${message.role}: ${message.content}`)
-            .join("\n");
+    async generateResponse(prompt: Prompt): Promise<string> {
+        const fullPrompt = `
+${prompt.system}
+
+Conversation:
+${prompt.conversation}
+
+Retrieved Context:
+${prompt.retrievedContext || "None"}
+
+Current User Query:
+${prompt.userQuery}
+`;
 
         const response = await this.ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: conversation
+            contents: fullPrompt,
         });
 
         return response.text ?? "No response generated.";

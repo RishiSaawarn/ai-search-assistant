@@ -1,5 +1,5 @@
-import type { Chat } from "../../models/chat.model.js";
+import type { Prompt } from "../../models/prompt.model.js";
 
 export interface LLMService {
-    generateResponse(chat: Chat): Promise<string>;
+    generateResponse(prompt: Prompt): Promise<string>;
 }
