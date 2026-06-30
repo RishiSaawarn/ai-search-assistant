@@ -6,64 +6,51 @@ import type { SearchResult } from "../../models/search-result.model.js";
 import type { RetrievedDocument } from "../../models/retrieved-document.model.js";
 import type { CrawlerService } from "./crawler.interface.js";
 
-export class ReadabilityCrawlerService
-    implements CrawlerService
-{
-    async crawl(
-        searchResults: SearchResult[]
-    ): Promise<RetrievedDocument[]> {
+export class ReadabilityCrawlerService implements CrawlerService {
+    async crawl(searchResults: SearchResult[]): Promise<RetrievedDocument[]> {
+        const tasks = searchResults.map((result) =>
+            this.fetchDocument(result)
+        );
 
-        const documents: RetrievedDocument[] = [];
+        // Fetch all pages in parallel — failed pages are skipped
+        const settled = await Promise.allSettled(tasks);
 
-        for (const result of searchResults) {
-            try {
+        return settled
+            .filter(
+                (r): r is PromiseFulfilledResult<RetrievedDocument> =>
+                    r.status === "fulfilled"
+            )
+            .map((r) => r.value);
+    }
 
-                const response = await axios.get<string>(result.url, {
-                timeout: 10000,
-                headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 AI-Search-Assistant/1.0",
-                },
-            });
+    private async fetchDocument(result: SearchResult): Promise<RetrievedDocument> {
+        const response = await axios.get<string>(result.url, {
+            timeout: 5000,
+            headers: {
+                "User-Agent": "Mozilla/5.0 AI-Search-Assistant/1.0",
+            },
+        });
 
-                const dom = new JSDOM(response.data, {
-                    url: result.url
-                });
+        const dom = new JSDOM(response.data, { url: result.url });
+        const reader = new Readability(dom.window.document);
+        const article = reader.parse();
 
-                const reader =
-                    new Readability(dom.window.document);
-
-                const article =
-                    reader.parse();
-
-                if (!article?.textContent) {
-                    continue;
-                }
-
-                const title: string = article.title || result.title;
-                const content: string = article.textContent;
-
-                const document: RetrievedDocument = {
-                title,
-                url: result.url,
-                content,
-            };
-
-            if (result.score !== undefined) {
-                document.score = result.score;
-            }
-
-            documents.push(document);
-
-            } catch (error) {
-
-                console.warn(
-                    `Failed to crawl ${result.url}`
-                );
-
-            }
+        if (!article?.textContent) {
+            throw new Error(`No content extracted from ${result.url}`);
         }
 
-        return documents;
+        const doc: RetrievedDocument = {
+            title: article.title || result.title,
+            url: result.url,
+            content: article.textContent,
+        };
+
+        if (result.score !== undefined) {
+            doc.score = result.score;
+        }
+
+        return doc;
     }
 }
+
+

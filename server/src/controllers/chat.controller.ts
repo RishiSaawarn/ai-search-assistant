@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 
 import {
     conversationService,
@@ -33,16 +33,23 @@ export function deleteChat(req: Request<ChatParams>, res: Response) {
     res.sendStatus(204);
 }
 
-export async function addMessage(req: Request<ChatParams>, res: Response) {
+export async function addMessage(req: Request<ChatParams>, res: Response, next: NextFunction) {
     const { chatId } = req.params;
     const { message } = req.body;
 
-    const reply = await orchestratorService.handleMessage(
-        chatId,
-        message
-    );
+    try {
+        const { sources } = await orchestratorService.handleMessage(chatId, message);
 
-    res.json({
-        reply
-    });
+        // Return the full updated chat + sources for citation rendering
+        const updatedChat = conversationService.getChat(chatId);
+
+        res.json({
+            chatId,
+            messages: updatedChat.messages,
+            sources,
+        });
+    } catch (error) {
+        next(error);
+    }
 }
+

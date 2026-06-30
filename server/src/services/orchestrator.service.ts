@@ -1,70 +1,75 @@
 import type { SearchService } from "./search/search.interface.js";
-import type { CrawlerService } from "./crawler/crawler.interface.js";
-import type { RetrievedDocument } from "../models/retrieved-document.model.js";
+import type { RetrievedDocument, Source } from "../models/retrieved-document.model.js";
 import { ConversationService } from "./conversation.service.js";
 
 import type { LLMService } from "./llm/llm.interface.js";
 import type { SearchDecisionService } from "./search/search-decision.interface.js";
 import type { PromptBuilder } from "./prompt/prompt-builder.interface.js";
+import type { QueryReformulationService } from "./search/query-reformulation.service.js";
+
+export interface HandleMessageResult {
+    reply: string;
+    sources: Source[];
+}
 
 export class OrchestratorService {
     constructor(
-    private conversationService: ConversationService,
-    private llmService: LLMService,
-    private searchDecisionService: SearchDecisionService,
-    private promptBuilder: PromptBuilder,
-    private searchService: SearchService,
-    private crawlerService: CrawlerService
-) {}
+        private conversationService: ConversationService,
+        private llmService: LLMService,
+        private searchDecisionService: SearchDecisionService,
+        private promptBuilder: PromptBuilder,
+        private searchService: SearchService,
+        private queryReformulationService: QueryReformulationService,
+    ) {}
 
     async handleMessage(
         chatId: string,
         message: string
-    ): Promise<string> {
+    ): Promise<HandleMessageResult> {
         // Store the user's message
-        this.conversationService.addMessage(
-            chatId,
-            "user",
-            message
-        );
+        this.conversationService.addMessage(chatId, "user", message);
 
         // Retrieve updated conversation
         const chat = this.conversationService.getChat(chatId);
 
-        // Decide whether search is required
-        const shouldSearch =
-            await this.searchDecisionService.shouldSearch(chat);
-
+        // Use LLM to decide whether a web search is required
+        const shouldSearch = await this.searchDecisionService.shouldSearch(chat);
         console.log("Search required:", shouldSearch);
 
-        // Placeholder for future retrieved web context
-                    let documents: RetrievedDocument[] = [];
+        let documents: RetrievedDocument[] = [];
+        let sources: Source[] = [];
 
-            if (shouldSearch) {
-                const searchResults =
-                    await this.searchService.search(message);
+        if (shouldSearch) {
+            // Reformulate the query into a clean, self-contained search query
+            const searchQuery = await this.queryReformulationService.reformulate(chat);
+            console.log("Search query:", searchQuery);
 
-                documents =
-                    await this.crawlerService.crawl(searchResults);
-            }
+            const searchResults = await this.searchService.search(searchQuery);
 
-            const prompt =
-                await this.promptBuilder.buildPrompt(
-                    chat,
-                    documents
-                );
+            // Use Tavily's pre-extracted content directly — no slow sequential crawling
+            documents = searchResults.map((result) => ({
+                title: result.title,
+                url: result.url,
+                content: result.snippet,
+                score: result.score,
+            }));
+
+            sources = documents.map((doc) => ({
+                title: doc.title,
+                url: doc.url,
+            }));
+        }
+
+        const prompt = await this.promptBuilder.buildPrompt(chat, documents);
 
         // Generate AI response
-        const reply =
-            await this.llmService.generateResponse(prompt);
+        const reply = await this.llmService.generateResponse(prompt);
 
         // Store assistant response
-        this.conversationService.addMessage(
-            chatId,
-            "assistant",
-            reply
-        );
+        this.conversationService.addMessage(chatId, "assistant", reply);
 
-        return reply;
+        return { reply, sources };
     }
 }
+
+

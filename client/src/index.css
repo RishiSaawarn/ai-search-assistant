@@ -1,0 +1,309 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #020202;
+    --bg-card: #080808;
+    --accent: #4ade80; 
+    --accent-glow: rgba(74, 222, 128, 0.6);
+    --accent-dim: rgba(74, 222, 128, 0.2);
+    --text-primary: #4ade80;
+    --text-secondary: #22c55e;
+    --border-color: #166534;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', 'VT323', monospace;
+    -webkit-font-smoothing: none;
+    text-shadow: 0 0 3px var(--accent-glow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #root {
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Scanline effect */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+}
+
+@layer utilities {
+  /* Typing indicator dots animation */
+  @keyframes typing-bounce {
+    0%, 60%, 100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    30% {
+      transform: translateY(-6px);
+      opacity: 1;
+      text-shadow: 0 0 8px var(--accent);
+    }
+  }
+
+  .typing-dot {
+    animation: typing-bounce 1.4s infinite ease-in-out;
+    color: var(--accent);
+  }
+
+  .typing-dot:nth-child(1) { animation-delay: 0s; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes message-in {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .message-animate {
+    animation: message-in 0.15s ease-out forwards;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+  }
+  
+  /* Blinking cursor effect */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+}
+
+/* Prose / markdown overrides for terminal theme */
+.markdown-body {
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  color: #86efac; /* Lighter green for headers */
+  font-weight: normal;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px dashed var(--border-color);
+  padding-bottom: 0.2em;
+}
+
+.markdown-body h1 { font-size: 1.4em; }
+.markdown-body h2 { font-size: 1.25em; }
+.markdown-body h3 { font-size: 1.1em; }
+
+.markdown-body p {
+  margin: 0.8em 0;
+}
+
+.markdown-body p:first-child {
+  margin-top: 0;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+  list-style-type: square;
+}
+
+.markdown-body li {
+  margin: 0.2em 0;
+}
+
+.markdown-body code:not(pre code) {
+  background-color: var(--accent-dim);
+  color: var(--accent);
+  padding: 0.15em 0.4em;
+  border: 1px solid var(--border-color);
+  font-size: 0.9em;
+  font-family: 'Fira Code', monospace;
+}
+
+.markdown-body pre {
+  margin: 0.75em 0;
+  border: 1px solid var(--accent);
+  background: #000 !important;
+  box-shadow: 0 0 10px var(--accent-dim);
+}
+
+.markdown-body blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 1em;
+  margin: 0.5em 0;
+  color: var(--text-secondary);
+  background: var(--accent-dim);
+}
+
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent);
+}
+
+.markdown-body a:hover {
+  background: var(--accent);
+  color: #000;
+  text-shadow: none;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 0.9em;
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--accent-dim);
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px dashed var(--accent);
+  margin: 1em 0;
+}
+
+/* Code block container */
+.code-block-wrapper {
+  position: relative;
+  border: 1px solid var(--accent);
+  background: #000;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: #000;
+}
+
+.code-block-lang {
+  font-size: 0.8rem;
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #000;
+  background: transparent;
+  border: 1px solid #000;
+  cursor: pointer;
+  padding: 2px 6px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.copy-btn:hover {
+  background: #000;
+  color: var(--accent);
+}
+
+.copy-btn.copied {
+  background: #000;
+  color: var(--accent);
+}
+
+.code-block-content {
+  padding: 0 !important;
+}
+
+.code-block-content > pre {
+  margin: 0 !important;
+  border: none !important;
+  background: #000 !important;
+  padding: 1em !important;
+  overflow-x: auto;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+  font-family: 'Fira Code', monospace !important;
+  text-shadow: none !important;
+}

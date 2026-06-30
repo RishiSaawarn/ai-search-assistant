@@ -1,40 +1,31 @@
 import { ConversationService } from "./services/conversation.service.js";
-import { ConversationFormatterService } from "./services/prompt/conversation-formatter.service.js";
 import { DefaultPromptBuilderService } from "./services/prompt/default-prompt-builder.service.js";
 import { OrchestratorService } from "./services/orchestrator.service.js";
 import { GeminiLLMService } from "./services/llm/gemini-llm.service.js";
 import { TavilySearchService } from "./services/search/tavily-search.service.js";
-import { ReadabilityCrawlerService }
-from "./services/crawler/readability-crawler.service.js";
+import { LLMSearchDecisionService } from "./services/search/llm-search-decision.service.js";
+import { QueryReformulationService } from "./services/search/query-reformulation.service.js";
+import { ReadabilityCrawlerService } from "./services/crawler/readability-crawler.service.js";
 
-export const crawlerService =
-new ReadabilityCrawlerService();
-
-export const searchService =
-    new TavilySearchService();
-    
-export const conversationFormatter =
-    new ConversationFormatterService();
-
-export const promptBuilder =
-    new DefaultPromptBuilderService(
-        conversationFormatter
-    );
-
+// Core services (no dependencies)
 export const conversationService = new ConversationService();
-import { RuleBasedSearchDecisionService } from "./services/search/rule-based-search-decision.service.js";
-
 export const llmService = new GeminiLLMService();
+export const searchService = new TavilySearchService();
+export const crawlerService = new ReadabilityCrawlerService();
 
-export const searchDecisionService =
-    new RuleBasedSearchDecisionService();
+// LLM-powered routing & query services
+export const searchDecisionService = new LLMSearchDecisionService(llmService);
+export const queryReformulationService = new QueryReformulationService(llmService);
 
-export const orchestratorService =
-    new OrchestratorService(
-        conversationService,
-        llmService,
-        searchDecisionService,
-        promptBuilder,
-        searchService,
-        crawlerService
-    );
+// Prompt builder (context window + structured history)
+export const promptBuilder = new DefaultPromptBuilderService();
+
+// Main orchestrator
+export const orchestratorService = new OrchestratorService(
+    conversationService,
+    llmService,
+    searchDecisionService,
+    promptBuilder,
+    searchService,
+    queryReformulationService,
+);

@@ -5,6 +5,7 @@ import type { LLMService } from "./llm.interface.js";
 
 export class GeminiLLMService implements LLMService {
     private ai: GoogleGenAI;
+    private readonly model = "gemini-2.5-flash";
 
     constructor() {
         const apiKey = process.env.GEMINI_API_KEY;
@@ -13,30 +14,42 @@ export class GeminiLLMService implements LLMService {
             throw new Error("GEMINI_API_KEY is not defined.");
         }
 
-        this.ai = new GoogleGenAI({
-            apiKey,
-        });
+        this.ai = new GoogleGenAI({ apiKey });
     }
 
     async generateResponse(prompt: Prompt): Promise<string> {
-        const fullPrompt = `
-${prompt.system}
+        // Append retrieved web context to the final user message
+        const userContent = prompt.retrievedContext
+            ? `${prompt.userQuery}\n\n--- Retrieved Web Context ---\n${prompt.retrievedContext}`
+            : prompt.userQuery;
 
-Conversation:
-${prompt.conversation}
-
-Retrieved Context:
-${prompt.retrievedContext || "None"}
-
-Current User Query:
-${prompt.userQuery}
-`;
+        // Build structured multi-turn conversation for the Gemini chat API
+        const contents = [
+            ...prompt.history.map((turn) => ({
+                role: turn.role === "assistant" ? "model" : "user",
+                parts: [{ text: turn.content }],
+            })),
+            {
+                role: "user",
+                parts: [{ text: userContent }],
+            },
+        ];
 
         const response = await this.ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: fullPrompt,
+            model: this.model,
+            systemInstruction: prompt.system,
+            contents,
         });
 
         return response.text ?? "No response generated.";
     }
-}
+
+    async generateText(prompt: string): Promise<string> {
+        const response = await this.ai.models.generateContent({
+            model: this.model,
+            contents: prompt,
+        });
+
+        return response.text?.trim() ?? "";
+    }
+}
