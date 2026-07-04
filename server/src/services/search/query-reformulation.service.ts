@@ -19,7 +19,11 @@ export class QueryReformulationService {
             )
             .join("\n");
 
-        const prompt = `Based on this conversation, generate a concise and specific web search query that will find the most relevant current information to answer the user's latest request. The query should be self-contained and not rely on pronouns or references to earlier parts of the conversation.
+        const dateStr = new Date().toLocaleDateString("en-US", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC",
+        });
+
+        const prompt = `Today's date is: ${dateStr}. Based on this conversation, generate a concise and specific web search query that will find the most relevant current information to answer the user's latest request. The query should be self-contained and not rely on pronouns or references to earlier parts of the conversation.
 
 Conversation:
 ${context}
