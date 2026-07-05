@@ -37,8 +37,8 @@ export class GeminiLLMService implements LLMService {
 
         const response = await this.ai.models.generateContent({
             model: this.model,
-            systemInstruction: prompt.system,
             contents,
+            ...(prompt.system ? { config: { systemInstruction: prompt.system } } : {}),
         });
 
         return response.text ?? "No response generated.";

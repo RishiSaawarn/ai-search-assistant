@@ -43,7 +43,8 @@ export class PortkeyLLMService implements LLMService {
             max_tokens: 512
         });
 
-        return response.choices[0]?.message?.content ?? "No response generated.";
+        const content = response.choices[0]?.message?.content;
+        return typeof content === "string" ? content : "No response generated.";
     }
 
     async generateText(prompt: string): Promise<string> {
@@ -53,6 +54,7 @@ export class PortkeyLLMService implements LLMService {
             max_tokens: 512
         });
 
-        return response.choices[0]?.message?.content?.trim() ?? "";
+        const content = response.choices[0]?.message?.content;
+        return typeof content === "string" ? content.trim() : "";
     }
 }
